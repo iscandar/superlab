@@ -1,0 +1,25 @@
+#     Default
+127.0.0.1 localhost
+#     Administration
+100.100.100.5 dns.lab
+100.100.100.4 portainer.lab
+100.100.100.3 wireguard.lab
+#     Registry
+100.100.100.13 registry.lab
+100.100.100.12 seafile.lab
+100.100.100.10 gitea.lab
+100.100.100.15 onlyoffice.lab
+100.100.100.16 ui-registry.lab
+#     AI
+100.100.100.20 ollama.lab
+100.100.100.21 ollamaui.lab
+
+#     Monitoring
+100.100.100.25 smtp.lab
+100.100.100.21 grafana.lab
+100.100.100.23 prometheus.lab
+100.100.100.24 alertmanager.lab
+
+#      Devops
+100.100.100.30 devops.lab
+100.100.100.31 jenkins.lab

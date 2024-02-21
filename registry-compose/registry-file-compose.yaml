@@ -1,0 +1,170 @@
+version: "3"
+services:
+
+  gitea:
+    image: gitea/gitea:latest
+    restart: always
+    volumes:
+      - ./volumes/gitea_data:/data
+    depends_on:
+      - gitea-postgres
+    expose:
+      - 3000
+    ports:
+      - "127.0.0.1:5090:3000"
+    dns:
+      - 127.0.0.11
+      - 100.100.100.5
+    networks:
+      administration-subnet:
+        ipv4_address: 100.100.100.10
+    env_file: ./.env_gitea
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        
+  gitea-postgres:
+    image: postgres:alpine
+    restart: always
+    volumes:
+      - ./volumes/gitea_postgres:/var/lib/postgresql/data
+    expose:
+      - 5432
+    networks:
+      administration-subnet:
+        ipv4_address: 100.100.100.11
+    env_file: ./.env_gitea
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+  seafile-mariadb:
+    image: mariadb:10.11
+    container_name: seafile-mysql
+    restart: unless-stopped
+    volumes:
+      - ./volumes/seafile_maria:/var/lib/mysql
+    expose:
+      - 3306
+    networks:
+      administration-subnet:
+        ipv4_address: 100.100.100.14
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    env_file: ./.env_seafile
+
+  memcached:
+    image: memcached:1.6
+    container_name: seafile-memcached
+    restart: unless-stopped
+    entrypoint: memcached -m 256
+    networks:
+      administration-subnet:
+        ipv4_address: 100.100.100.19
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  seafile:
+    image: gronis/seafile:latest
+    container_name: seafile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8082:8082"
+      - "127.0.0.1:8080:8080"
+    expose:
+      - 8000
+      - 8082
+      - 8080    
+    dns:
+      - 127.0.0.11
+      - 100.100.100.5
+    volumes:
+      - ./volumes/seafile_data:/seafile
+    env_file:
+      - .env_seafile
+    networks:
+      administration-subnet:
+        ipv4_address: 100.100.100.12
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+       
+  onlyoffice-documentserver:
+    image: onlyoffice/documentserver:latest
+    restart: unless-stopped
+    container_name: seafile-oods
+    expose:
+      - 80
+    dns:
+      - 127.0.0.11
+      - 100.100.100.5
+    volumes:
+      - ./volumes/onlyoffice_data:/var/www/onlyoffice/Data
+    networks:
+      administration-subnet:
+        ipv4_address: 100.100.100.15
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+        
+  registry:
+    image: registry:latest
+    container_name: registry
+    expose:
+      - 5000
+    volumes:
+      - ./volumes/registry:/var/lib/registry
+    restart: always
+    dns:
+      - 127.0.0.11
+      - 100.100.100.5
+    networks:
+      administration-subnet:
+        ipv4_address: 100.100.100.13
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ui-registry:
+    image: joxit/docker-registry-ui:latest
+    expose:
+      - 80
+    ports:
+      - 127.0.0.1:5555:80
+    depends_on:
+      - registry
+    dns:
+      - 127.0.0.11
+      - 100.100.100.5
+    networks:
+      administration-subnet:
+        ipv4_address: 100.100.100.16
+    env_file: ./.env_gitea
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+                
+networks:
+  administration-subnet:
+    external: true
+    name: administration-subnet

@@ -1,0 +1,16 @@
+global:
+  smtp_smarthost: 'smtp.ontitrue:1025'
+  smtp_from: 'alertmanager@smtp.ontitrue'
+  smtp_auth_username: ''
+  smtp_auth_password: ''
+  smtp_require_tls: false
+
+route:
+  group_by: ['alertname']
+  receiver: 'email-notifications'
+
+receivers:
+- name: 'email-notifications'
+  email_configs:
+  - to: 'alertgroup@smtp.ontitrue'
+    send_resolved: true

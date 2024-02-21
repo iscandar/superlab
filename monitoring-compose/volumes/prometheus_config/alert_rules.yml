@@ -1,0 +1,49 @@
+groups:
+- name: node-exporter-rules
+  rules:
+  - alert: HighCpuLoad
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: High CPU load (instance {{ $labels.instance }})
+      description: "CPU load is over 85% (current value is: {{ $value }}%)"
+
+  - alert: HighMemoryUsage
+    expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 15
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: High memory usage (instance {{ $labels.instance }})
+      description: "Memory available is under 15% (current value is: {{ $value }}%)"
+
+  - alert: DiskSpaceRunningLow
+    expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} / node_filesystem_size_bytes) * 100 < 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Disk space is running low (instance {{ $labels.instance }})
+      description: "Disk space available is under 10% (current value is: {{ $value }}%)"
+
+- name: cadvisor-rules
+  rules:
+  - alert: ContainerHighMemoryUsage
+    expr: sum by(name)(container_memory_usage_bytes) / sum by(name)(container_spec_memory_limit_bytes) > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: High memory usage (container {{ $labels.name }})
+      description: "Container is using more than 80% of its memory limit (current value is: {{ $value }}%)"
+
+  - alert: ContainerHighCpuUsage
+    expr: sum by(name)(rate(container_cpu_usage_seconds_total[5m])) / sum by(name)(container_spec_cpu_quota / container_spec_cpu_period) > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: High CPU usage (container {{ $labels.name }})
+      description: "Container is using more than 80% of its CPU limit (current value is: {{ $value }})"
